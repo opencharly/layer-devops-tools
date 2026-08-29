@@ -30,48 +30,45 @@ devops-tools:
                 package:
                     - dnsutils
         plan:
-            - run: |
-                command=curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
-                cd /tmp && unzip -q awscliv2.zip
-                ./aws/install
-                rm -rf /tmp/awscliv2.zip /tmp/aws
+            - run: download the AWS CLI v2 zip (the declarative download verb — content-addressed /tmp/downloads cache, atomic .part to mv rename, stage-user-correct cache mount)
+              download: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+              extract: zip
+              to: /tmp/awscli
               run_as: root
+            - run: run the bundled aws install script
               command: |
-                curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
-                cd /tmp && unzip -q awscliv2.zip
-                ./aws/install
-                rm -rf /tmp/awscliv2.zip /tmp/aws
-            - run: |
-                command=SCW_URL=$(curl -fsSL https://api.github.com/repos/scaleway/scaleway-cli/releases/latest | grep "browser_download_url.*linux_amd64\"" | grep -v ".sha256" | cut -d'"' -f4)
-                [ -z "$SCW_URL" ] && SCW_URL="https://github.com/scaleway/scaleway-cli/releases/download/v2.45.0/scaleway-cli_2.45.0_linux_amd64"
-                curl -fsSL "$SCW_URL" -o /usr/local/bin/scw
-                chmod +x /usr/local/bin/scw
+                cd /tmp/awscli && ./aws/install
+                rm -rf /tmp/awscli
               run_as: root
-              command: |
-                SCW_URL=$(curl -fsSL https://api.github.com/repos/scaleway/scaleway-cli/releases/latest | grep "browser_download_url.*linux_amd64\"" | grep -v ".sha256" | cut -d'"' -f4)
-                [ -z "$SCW_URL" ] && SCW_URL="https://github.com/scaleway/scaleway-cli/releases/download/v2.45.0/scaleway-cli_2.45.0_linux_amd64"
-                curl -fsSL "$SCW_URL" -o /usr/local/bin/scw
-                chmod +x /usr/local/bin/scw
-            - run: |
-                command=curl -fsSL "https://raw.githubusercontent.com/ahmetb/kubectx/master/kubectx" -o /usr/local/bin/kubectx
-                curl -fsSL "https://raw.githubusercontent.com/ahmetb/kubectx/master/kubens" -o /usr/local/bin/kubens
-                chmod +x /usr/local/bin/kubectx /usr/local/bin/kubens
+            - run: download the scaleway CLI binary (pinned release — the declarative download verb; the previous dynamic latest-API lookup is replaced by the deterministic pinned fallback URL)
+              download: "https://github.com/scaleway/scaleway-cli/releases/download/v2.45.0/scaleway-cli_2.45.0_linux_amd64"
+              extract: none
+              to: /usr/local/bin/scw
+              mode: "0755"
               run_as: root
+            - run: download the kubectx script (the declarative download verb)
+              download: "https://raw.githubusercontent.com/ahmetb/kubectx/master/kubectx"
+              extract: none
+              to: /usr/local/bin/kubectx
+              mode: "0755"
+              run_as: root
+            - run: download the kubens script (the declarative download verb)
+              download: "https://raw.githubusercontent.com/ahmetb/kubectx/master/kubens"
+              extract: none
+              to: /usr/local/bin/kubens
+              mode: "0755"
+              run_as: root
+            - run: download the opentofu installer script (the declarative download verb)
+              download: "https://get.opentofu.org/install-opentofu.sh"
+              extract: none
+              to: /tmp/install-opentofu.sh
+              mode: "0755"
+              run_as: root
+            - run: run the opentofu installer
               command: |
-                curl -fsSL "https://raw.githubusercontent.com/ahmetb/kubectx/master/kubectx" -o /usr/local/bin/kubectx
-                curl -fsSL "https://raw.githubusercontent.com/ahmetb/kubectx/master/kubens" -o /usr/local/bin/kubens
-                chmod +x /usr/local/bin/kubectx /usr/local/bin/kubens
-            - run: |
-                command=curl -fsSL "https://get.opentofu.org/install-opentofu.sh" -o /tmp/install-opentofu.sh
-                chmod +x /tmp/install-opentofu.sh
                 bash /tmp/install-opentofu.sh --install-method standalone
                 rm -f /tmp/install-opentofu.sh
               run_as: root
-              command: |
-                curl -fsSL "https://get.opentofu.org/install-opentofu.sh" -o /tmp/install-opentofu.sh
-                chmod +x /tmp/install-opentofu.sh
-                bash /tmp/install-opentofu.sh --install-method standalone
-                rm -f /tmp/install-opentofu.sh
             - check: the AWS CLI v2 binary is installed at /usr/local/bin/aws
               file:
                 file: /usr/local/bin/aws
@@ -144,7 +141,7 @@ devops-tools-skill:
             
             ## Cross-distro coverage
             
-            `rpm:` (Fedora) · `pac:` (Arch) · `deb:` (Debian/Ubuntu — `dnsutils` replaces `bind-utils`, `jq`, `rsync` identical). The cloud-CLI tools (AWS, Scaleway, kubectx/kubens, OpenTofu) are curl-downloaded binaries — distro-agnostic by construction, no per-package-manager work needed.
+            `rpm:` (Fedora) · `pac:` (Arch) · `deb:` (Debian/Ubuntu — `dnsutils` replaces `bind-utils`, `jq`, `rsync` identical). The cloud-CLI tools (AWS, Scaleway, kubectx/kubens, OpenTofu) are declarative download-verb binaries — distro-agnostic by construction, no per-package-manager work needed.
             
             ## Usage
             
