@@ -1,7 +1,7 @@
 version: 2026.232.0520
 devops-tools:
     candy:
-        version: 2026.162.1430
+        version: 2026.243.0100
         description: |
             provisions cloud and infra CLI tooling (AWS CLI v2, Scaleway CLI, OpenTofu, kubectx/kubens) plus JSON/sync/DNS utilities
             Installs the AWS CLI v2, the Scaleway CLI, OpenTofu, and the
@@ -11,7 +11,7 @@ devops-tools:
             version, so the composition is verifiable in a disposable container
             without any cloud account or live cluster.
         require:
-            - '@github.com/opencharly/layer-nodejs:v2026.235.2056'
+            - '@github.com/opencharly/layer-nodejs:v2026.239.1624'
         package:
             - jq
             - rsync
